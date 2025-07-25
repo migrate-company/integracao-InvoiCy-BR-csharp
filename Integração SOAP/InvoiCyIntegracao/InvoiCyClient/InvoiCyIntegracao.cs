@@ -32,8 +32,8 @@ namespace InvoiCyNfeClient
 
             //instancia um objeto da classe de envio ao webservice e atribui a eles os parametros necessários.
             InvoiCyClient client = new InvoiCyClient();
-            //client.UrlWs = "https://homolog.invoicy.com.br/arecepcao.aspx?wsdl";
-            client.UrlWs = "https://mcp-web-gx18.invoicy.com.br/ea23318/arecepcao.aspx?wsdl";
+            client.UrlWs = "https://homolog.invoicy.com.br/arecepcao.aspx?wsdl";
+            //client.UrlWs = "https://mcp-web-gx18.invoicy.com.br/ea23318/arecepcao.aspx?wsdl";
 
             client.Soap = client.EscreveSoap(xmlLinearizado, txtChaveParceiro.Text, CK);
 
