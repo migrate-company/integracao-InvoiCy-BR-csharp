@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/IntegracaoInvoicy/.vs/IntegracaoInvoicy
+/IntegracaoInvoicy/ConsoleUI/obj/Debug
