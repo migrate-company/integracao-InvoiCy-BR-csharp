@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
+﻿using InvoiCy;
+using System;
 using System.Windows.Forms;
-using InvoiCy;
-using System.Xml;
-using InvoiCyNfeClient;
+using System.Xml.Linq;
 
 namespace InvoiCyNfeClient
 {
@@ -16,27 +9,33 @@ namespace InvoiCyNfeClient
     {
         public InvoiCyIntegracao()
         {
-            InitializeComponent();            
+            InitializeComponent();
         }
 
         private void btnExecutar_Click(object sender, EventArgs e)
         {
             //Exemplo de envio com Web Reference
-            EnvioAutomatico();
-            
+            //EnvioAutomatico();
+
             //Exemplo de envio escrevendo o SOAP
-            //EnvioManual();
+            EnvioManual();
         }
 
         private void EnvioManual()
         {
+            //Lineariza o XML do documento           
+            XDocument doc = XDocument.Parse(txtXML.Text);
+            var xmlLinearizado = doc.ToString(SaveOptions.DisableFormatting);
+
             //Gera CK
-            string CK = GeraHashMD5(txtXML.Text);
+            string CK = GeraHashMD5(xmlLinearizado);
 
             //instancia um objeto da classe de envio ao webservice e atribui a eles os parametros necessários.
             InvoiCyClient client = new InvoiCyClient();
-            client.UrlWs = "https://homolog.invoicy.com.br/arecepcao.aspx?wsdl";
-            client.Soap = client.EscreveSoap(txtXML.Text, txtChaveParceiro.Text, CK);
+            //client.UrlWs = "https://homolog.invoicy.com.br/arecepcao.aspx?wsdl";
+            client.UrlWs = "https://mcp-web-gx18.invoicy.com.br/ea23318/arecepcao.aspx?wsdl";
+
+            client.Soap = client.EscreveSoap(xmlLinearizado, txtChaveParceiro.Text, CK);
 
             //Recebe o retorno da requisição.
             client.ExecutaWS();
@@ -62,8 +61,10 @@ namespace InvoiCyNfeClient
 
         private void EnvioAutomatico()
         {
-
-            String texto = txtXML.Text;
+            //Lineariza o XML do documento           
+            XDocument doc = XDocument.Parse(txtXML.Text);
+            var xmlLinearizado = doc.ToString(SaveOptions.DisableFormatting);
+            String texto = xmlLinearizado;
 
             //Cria um objeto para guardar os dados do cabeçalho da conexão
             InvoiCyRecepcao.InvoiCyRecepcaoCabecalho cab = new InvoiCyRecepcao.InvoiCyRecepcaoCabecalho();
@@ -76,7 +77,7 @@ namespace InvoiCyNfeClient
             //Armazena os dados da requisição.
             InvoiCyRecepcao.InvoiCyRecepcaoDadosItem dados = new InvoiCyRecepcao.InvoiCyRecepcaoDadosItem();
             dados.Documento = texto.Trim();
-            dados.Parametros = "";   
+            dados.Parametros = "";
 
             //Adiciona os dados na recepção
             InvoiCyRecepcao.InvoiCy IVC = new InvoiCyRecepcao.InvoiCy();
@@ -85,7 +86,7 @@ namespace InvoiCyNfeClient
             IVC.Dados[0] = dados;
             //Exemplo de envio de somente um documento, porém vários podem ser adicionados na mesma chamada
 
-           
+
             //Adiciona as informações da requisição
             InvoiCyRecepcao.InvoiCyRecepcaoInformacoes Info = new InvoiCyRecepcao.InvoiCyRecepcaoInformacoes();
             Info.Texto = "";
@@ -99,8 +100,8 @@ namespace InvoiCyNfeClient
             txtRetMensagem.Text = "";
             foreach (InvoiCyRecepcao.InvoiCyRetornoMensagemItem msgitem in retorno.Mensagem)
             {
-                txtRetMensagem.Text += msgitem.Codigo.ToString()+" - "+msgitem.Descricao;
-                
+                txtRetMensagem.Text += msgitem.Codigo.ToString() + " - " + msgitem.Descricao;
+
                 if (msgitem.Documentos != null)
                 {
                     foreach (InvoiCyRecepcao.InvoiCyRetornoMensagemItemDocumentosItem docitem in msgitem.Documentos)
@@ -117,7 +118,8 @@ namespace InvoiCyNfeClient
         {
             using (System.Security.Cryptography.MD5 md5Hash = System.Security.Cryptography.MD5.Create())
             {
-                byte[] data = md5Hash.ComputeHash(System.Text.Encoding.UTF8.GetBytes(txtChaveComunicacao.Text + texto.Trim()));
+                //byte[] data = md5Hash.ComputeHash(System.Text.Encoding.UTF8.GetBytes(txtChaveParceiro.Text.Trim() + texto.Trim())); //Para cadastro de empresa
+                byte[] data = md5Hash.ComputeHash(System.Text.Encoding.UTF8.GetBytes(txtChaveComunicacao.Text.Trim() + texto.Trim()));
 
                 System.Text.StringBuilder sBuilder = new System.Text.StringBuilder();
 
